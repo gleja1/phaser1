@@ -1,0 +1,154 @@
+<!doctype html> 
+<html> 
+<head> 
+    <meta charset="UTF-8" />
+    <script src="phaser3.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<script>
+
+
+
+
+var game = new Phaser.Game(480, 320, Phaser.AUTO, null, {preload: preload, create: create, update: update});
+
+var pilka;
+var rakietka;
+var klocki;
+var newKlocek;
+var brickInfo;
+var wynikText;
+var wynik = 0;
+var zycia = 3;
+var zyciaText;
+var zycieLostText;
+var graj = false;
+var startButton;
+
+function preload() {
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.scale.pageAlignHorizontally = true;
+    game.scale.pageAlignVertically = true;
+    game.stage.backgroundColor = '#eee';
+    game.load.image('rakietka', 'paletka.png');
+    game.load.image('brick', 'brick.png');
+    game.load.spritesheet('pilka', 'pilki.png', 20, 20);
+	game.load.spritesheet('button', 'button.png', 120, 40);
+}
+function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.arcade.checkCollision.down = false;
+    pilka = game.add.sprite(game.world.width*0.5, game.world.height-50, 'pilka');
+//    pilka.animations.add('pilka', [0,1,0,2,0,1,0,2,0], 24);
+    pilka.anchor.set(0.5);
+    game.physics.enable(pilka, Phaser.Physics.ARCADE);
+    pilka.body.collideWorldBounds = true;
+    pilka.body.bounce.set(1);
+    pilka.checkWorldBounds = true;
+    pilka.events.onOutOfBounds.add(pilkaNaDol, this);
+
+    rakietka = game.add.sprite(game.world.width*0.5, game.world.height-5, 'rakietka');
+    rakietka.anchor.set(0.5,1);
+    game.physics.enable(rakietka, Phaser.Physics.ARCADE);
+    rakietka.body.immovable = true;
+
+    initklocki();
+
+    textStyle = { font: '18px Arial', fill: '#0095DD' };
+    wynikText = game.add.text(5, 5, 'Punktów: 0', textStyle);
+    zyciaText = game.add.text(game.world.width-5, 5, 'Życia: '+zycia, textStyle);
+    zyciaText.anchor.set(1,0);
+    zycieLostText = game.add.text(game.world.width*0.5, game.world.height*0.5, 'Strata życia, kliknij aby kontynuować', textStyle);
+    zycieLostText.anchor.set(0.5);
+    zycieLostText.visible = false;
+
+    startButton = game.add.button(game.world.width*0.5, game.world.height*0.5, 'button', startGame, this, 1, 0, 2);
+    startButton.anchor.set(0.5);
+	    pilka.body.velocity.set(0, 0);
+
+}
+function update() {
+    game.physics.arcade.collide(pilka, rakietka, pilkaHitrakietka);
+    game.physics.arcade.collide(pilka, klocki, pilkaHitBrick);
+    if(graj) {
+        rakietka.x = game.input.x || game.world.width*0.5;
+    }
+}
+function initklocki() {
+    brickInfo = {
+        width: 50,
+        height: 20,
+        count: {
+            row: 7,
+            col: 3
+        },
+        offset: {
+            top: 50,
+            left: 60
+        },
+        padding: 10
+    }
+    klocki = game.add.group();
+    for(c=0; c<brickInfo.count.col; c++) {
+        for(r=0; r<brickInfo.count.row; r++) {
+            var brickX = (r*(brickInfo.width+brickInfo.padding))+brickInfo.offset.left;
+            var brickY = (c*(brickInfo.height+brickInfo.padding))+brickInfo.offset.top;
+            newKlocek = game.add.sprite(brickX, brickY, 'brick');
+            game.physics.enable(newKlocek, Phaser.Physics.ARCADE);
+            newKlocek.body.immovable = true;
+            newKlocek.anchor.set(0.5);
+            klocki.add(newKlocek);
+        }
+    }
+}
+function pilkaHitBrick(pilka, brick) {
+    var killTween = game.add.tween(brick.scale);
+    killTween.to({x:0,y:0}, 200, Phaser.Easing.Linear.None);
+    killTween.onComplete.addOnce(function(){
+        brick.kill();
+    }, this);
+    killTween.start();
+    wynik += 10;
+    wynikText.setText('Punktów: '+wynik);
+    if(wynik === brickInfo.count.row*brickInfo.count.col*10) {
+        alert('Wygrałeś, gratulacje!');
+        location.reload();
+    }
+}
+function pilkaNaDol() {
+    zycia--;
+    if(zycia) {
+        zyciaText.setText('Życia: '+zycia);
+        zycieLostText.visible = true;
+        pilka.reset(game.world.width*0.5, game.world.height-25);
+        rakietka.reset(game.world.width*0.5, game.world.height-5);
+        game.input.onDown.addOnce(function(){
+            zycieLostText.visible = false;
+            pilka.body.velocity.set(150, -150);
+        }, this);
+    }
+    else {
+        alert('Przegrałeś, koniec gry!');
+        location.reload();
+    }
+}
+function pilkaHitrakietka(pilka, rakietka) {
+    pilka.animations.play('wobble');
+}
+function startGame() {
+    startButton.destroy();
+    pilka.body.velocity.set(150, -150);
+    graj = true;
+}
+
+
+
+
+</script>
+</body>
+

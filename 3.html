@@ -1,0 +1,62 @@
+<!doctype html> 
+<html> 
+<head> 
+    <meta charset="UTF-8" />
+    <script src="phaser.js"></script>    
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var gra = new Phaser.Game(1008,720,Phaser.AUTO,'Moja gra',{preload:preload,create:create,update:update});
+var gracz;
+var wynik;
+var wynikTXT;
+var pilka;
+
+	function preload()
+	{
+		gra.load.image('rakieta', 'rakieta.png');
+		gra.load.image('pilka', 'pilka.png');
+		wynik=0;
+	};
+	function create ()
+	{
+		gra.physics.startSystem(Phaser.Physics.ARCADE);
+		gracz = gra.add.sprite(gra.width-50, gra.height/2-100, 'rakieta');
+		gracz.anchor.setTo(0.5,0.5);
+		gra.physics.enable(gracz);
+		gracz.body.immovable=true;
+		pilka = gra.add.sprite(gra.width/2, 450, 'pilka');
+		pilka.anchor.setTo(0.5,0.5);
+		gra.physics.enable(pilka);
+		pilka.body.collideWorldBounds = true;
+		pilka.body.velocity.setTo(500,500);
+		pilka.body.bounce.setTo(1,1);
+		wynikTXT =gra.add.text(50,50, wynik);
+		wynikTXT.anchor.set(0.5);
+		wynikTXT.align = 'center';
+		wynikTXT.font = 'Arial Black';
+		wynikTXT.fontSize = 50;
+		wynikTXT.fontWeight = 'bold';
+		wynikTXT.stroke = '#00ffaa';
+		wynikTXT.strokeThickness = 6;
+		wynikTXT.fill = '#43d637';
+		};
+function	update()
+		{
+		gracz.y=gra.input.y;
+		gra.physics.arcade.collide(gracz,pilka);
+		if (pilka.body.blocked.right)
+		wynik++;
+		wynikTXT.text=wynik;
+		};
+
+	</script>
+	</body>
+	</html>

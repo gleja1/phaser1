@@ -1,0 +1,25 @@
+<!doctype html> 
+<html> 
+<head> 
+    <meta charset="UTF-8" />
+    <script src="phaser.js"></script>    
+	<script src="intro.js"></script>    
+	<script src="graj2.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(1008,720,Phaser.AUTO);
+game.state.add('Intro',intro);
+game.state.add('Gra',graj);
+game.state.start('Intro');
+
+	</script>
+	</body>
+	</html>

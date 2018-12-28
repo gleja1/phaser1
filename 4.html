@@ -1,0 +1,92 @@
+<!doctype html> 
+<html> 
+<head> 
+    <meta charset="UTF-8" />
+    <script src="phaser3.js"></script>    
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'Moja gra',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { x:0,y:0 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+var gracz;
+var wynik;
+var wynikTXT;
+var pilka;
+var licznik;
+var czas_gry=20;
+var czas_gryTXT;
+var gra = new Phaser.Game(config);
+
+
+	function preload()
+	{
+		this.load.image('rakieta', 'rakieta.png');
+		this.load.image('pilka', 'pilka.png');
+		wynik=0;
+	};
+	function create ()
+	{
+		gracz = this.physics.add.sprite(700,600, 'rakieta');
+		gracz.setImmovable(true);
+		pilka = this.physics.add.sprite(20, 45, 'pilka');
+		pilka.setCollideWorldBounds(true);
+		pilka.setVelocity(500,500);
+		pilka.setBounce(1,1);
+		wynikTXT =this.add.text(50,50, wynik);
+		wynikTXT.setAlign('center');
+		wynikTXT.setFont ('bold Arial Black');
+		wynikTXT.setFontSize(50);
+		wynikTXT.setStroke( '#00ffaa',6);
+		wynikTXT.setFill ( '#43d637');
+		licznik=this.time.addEvent({ delay: 1000, callback: czas, callbackScope: this, loop: true });
+		czas_gryTXT =this.add.text(750,50, czas_gry);
+		};
+function	update()
+		{
+		gracz.y=this.input.y;
+		this.physics.add.collider(gracz,pilka);
+		if (pilka.body.blocked.right)
+		wynik++;
+		wynikTXT.text=wynik;
+		czas_gryTXT.text=czas_gry;
+		if (czas_gry==0) 
+		{
+		alert('Game over!');
+		wynik=0;
+		czas_gry=20;
+		pilka.x=20;
+		pilka.y=45;
+		}
+		
+		};
+		function czas()
+		{
+		if (czas_gry>0)
+		czas_gry--;
+		}
+
+	</script>
+	</body>
+	</html>

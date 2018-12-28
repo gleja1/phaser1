@@ -1,0 +1,36 @@
+<!doctype html> 
+<html> 
+<head> 
+    <meta charset="UTF-8" />
+    <script src="phaser3.js"></script>    
+    <script src="intro.js"></script>    
+    <script src="gra.js"></script>    
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'Moja gra',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { x:0,y:0 },
+            debug: false
+        }
+    }
+};
+
+var gra = new Phaser.Game(config);
+gra.scene.add('Intro',intro,true);
+gra.scene.add('Gra', gra1, false);
+	</script>
+	</body>
+	</html>

@@ -1,0 +1,187 @@
+<!doctype html> 
+<html> 
+<head> 
+    <meta charset="UTF-8" />
+    <script src="phaser3.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<script>
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'Moja gra',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { x:0,y:0 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+var gra = new Phaser.Game(config);
+
+
+
+var game = new Phaser.Game(480, 320, Phaser.AUTO, null, {preload: preload, create: create, update: update});
+
+var pilka;
+var rakietka;
+var klocki;
+var newKlocek;
+var brickInfo;
+var wynikText;
+var wynik = 0;
+var zycia = 3;
+var zyciaText;
+var zycieLostText;
+var graj = false;
+var startButton;
+
+function preload() {
+//    game.resize(window.innerWidth, window.innerHeight);
+    this.scene.backgroundColor = '#eee';
+    this.load.image('rakietka', 'paletka.png');
+    this.load.image('brick', 'brick.png');
+    this.load.image('pilka', 'pilki.png', 20, 20);
+	this.load.image('button', 'button.png', 120, 40);
+}
+function create() {
+
+this.physics.world.setBoundsCollision(true, true, true, false);
+    pilka = this.physics.add.sprite(this.sys.game.config.width*0.5, this.sys.game.config.height-50, 'pilka');
+//    pilka.animations.add('pilka', [0,1,0,2,0,1,0,2,0], 24);
+    pilka.setCollideWorldBounds(true);
+	pilka.setBounce(1,1);
+    pilka.checkWorldBounds = true;
+//   pilka.events.onOutOfBounds.add(pilkaNaDol, this);
+
+    rakietka = this.add.sprite(this.sys.game.config.width*0.5, this.sys.game.config.height-5, 'rakietka');
+    rakietka.immovable = true;
+
+brickInfo = {
+        width: 50,
+        height: 20,
+        count: {
+            row: 7,
+            col: 3
+        },
+        offset: {
+            top: 50,
+            left: 60
+        },
+        padding: 10
+    }
+    klocki = this.add.group();
+    for(c=0; c<brickInfo.count.col; c++) {
+        for(r=0; r<brickInfo.count.row; r++) {
+            var brickX = (r*(brickInfo.width+brickInfo.padding))+brickInfo.offset.left;
+            var brickY = (c*(brickInfo.height+brickInfo.padding))+brickInfo.offset.top;
+            newKlocek = this.add.sprite(brickX, brickY, 'brick');
+            newKlocek.immovable = true;
+            klocki.add(newKlocek);
+        }
+    }
+
+    textStyle = { font: '18px Arial', fill: '#0095DD' };
+    wynikText = this.add.text(5, 5, 'Punktów: 0', textStyle);
+    zyciaText = this.add.text(this.sys.game.config.width-5, 5, 'Życia: '+zycia, textStyle);
+    zycieLostText = this.add.text(this.sys.game.config.width*0.5, this.sys.game.config.height*0.5, 'Strata życia, kliknij aby kontynuować', textStyle);
+    zycieLostText.visible = false;
+
+    startButton = this.add.image(this.sys.game.config.width*0.5, this.sys.game.config.height*0.5, 'button');
+	startButton.setInteractive();
+	this.input.on('gameobjectdown',startGame);
+   	    pilka.setVelocity(0, 0);
+
+}
+function update() {
+    this.physics.collide(pilka, rakietka, pilkaHitrakietka);
+    this.physics.collide(pilka, klocki, pilkaHitBrick);
+    if(graj) {
+        rakietka.x = game.input.x || this.game.config.width*0.5;
+    }
+}
+function initklocki() {
+    brickInfo = {
+        width: 50,
+        height: 20,
+        count: {
+            row: 7,
+            col: 3
+        },
+        offset: {
+            top: 50,
+            left: 60
+        },
+        padding: 10
+    }
+    klocki = game.add.group();
+    for(c=0; c<brickInfo.count.col; c++) {
+        for(r=0; r<brickInfo.count.row; r++) {
+            var brickX = (r*(brickInfo.width+brickInfo.padding))+brickInfo.offset.left;
+            var brickY = (c*(brickInfo.height+brickInfo.padding))+brickInfo.offset.top;
+            newKlocek = game.add.sprite(brickX, brickY, 'brick');
+            game.physics.enable(newKlocek, Phaser.Physics.ARCADE);
+            newKlocek.body.immovable = true;
+            newKlocek.anchor.set(0.5);
+            klocki.add(newKlocek);
+        }
+    }
+}
+function pilkaHitBrick(pilka, brick) {
+    var killTween = game.add.tween(brick.scale);
+    killTween.to({x:0,y:0}, 200, Phaser.Easing.Linear.None);
+    killTween.onComplete.addOnce(function(){
+        brick.kill();
+    }, this);
+    killTween.start();
+    wynik += 10;
+    wynikText.setText('Punktów: '+wynik);
+    if(wynik === brickInfo.count.row*brickInfo.count.col*10) {
+        alert('Wygrałeś, gratulacje!');
+        location.reload();
+    }
+}
+function pilkaNaDol() {
+    zycia--;
+    if(zycia) {
+        zyciaText.setText('Życia: '+zycia);
+        zycieLostText.visible = true;
+        pilka.reset(game.world.width*0.5, game.world.height-25);
+        rakietka.reset(game.world.width*0.5, game.world.height-5);
+        game.input.onDown.addOnce(function(){
+            zycieLostText.visible = false;
+            pilka.body.velocity.set(150, -150);
+        }, this);
+    }
+    else {
+        alert('Przegrałeś, koniec gry!');
+        location.reload();
+    }
+}
+function pilkaHitrakietka(pilka, rakietka) {
+    pilka.animations.play('wobble');
+}
+function startGame() {
+    startButton.destroy();
+    pilka.setVelocity(150, -150);
+    graj = true;
+}
+
+
+
+
+</script>
+</body>
+
